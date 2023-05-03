@@ -1,0 +1,86 @@
+.topic_value {
+  padding-bottom: 10px;
+}
+
+.info {
+  padding-left: 10px
+}
+
+input.value {
+  width: 120px;
+}
+
+select.value {
+  width: 135px
+}
+
+.geofilter {
+  float: right;
+}
+
+#documentation_note {
+  font-size: smaller;
+}
+
+#geohash_note {
+  padding-left: 10px
+}
+
+.validation_note {
+  padding-left: 10px;
+  visibility: hidden
+}
+
+#map {
+  margin-bottom: 0px;
+  width: 100%;
+  height: 100%;  
+  min-height: 2000px;
+}
+
+#map_container {
+  max-width: 100%;
+}
+
+.awesome-marker .fa-sad-cry.icon-white, .awesome-marker .fa-laugh.icon-white {
+    color: #fff;
+    font-size: 2em;
+    margin-top: 5px;
+}
+
+body {
+  font-family: Sans-serif;
+}
+html, body {
+    max-width: 100%;
+	max-height: 100%;
+    overflow-x: hidden;
+	overflow-y: hidden;
+}
+#traffic-select {
+	z-index: 9999;
+    padding: 0.5em;
+    background: #ffffffd6;
+    width: 500px;
+    margin-left: 1em;
+    border-radius: 5px;
+    border: 1px solid #8888887d;
+    font-size: 14px;
+}
+#sidebar {
+	position: absolute;
+	right: 0;
+	width: 300px;
+	height: 100%;
+	background: #f5f5f5b8;
+	z-index: 9999;
+	border-left: 1px solid #aaa;
+}
+.hidden {
+	display: none;
+}
+.alepa-block {
+	display: block;
+	font-size: 14px;
+	padding: 0.5em;
+}

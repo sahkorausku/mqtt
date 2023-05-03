@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Digipinnat</title>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="index.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css">
+	
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-realtime/2.1.1/leaflet-realtime.min.js"></script>	
+    <script src="https://unpkg.com/mqtt@2.18.1/dist/mqtt.min.js"></script>
+	<style>
+		.legend {
+			line-height: 18px;
+			color: #CCC;
+		}
+		.legend i {
+			width: 18px;
+			height: 18px;
+			float: left;
+			margin-right: 8px;
+			opacity: 0.7;
+		}
+	</style>
+	<style>
+  #tableContainer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    height: 300px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    background-color: white;
+  }
+  .highlighted-row {
+    background-color: yellow;
+  }
+#vehicleTable tr {
+  cursor: pointer;
+}
+  #vehicleTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #vehicleTable thead {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  #vehicleTable th,
+  #vehicleTable td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+
+  #vehicleTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  #vehicleTable tr:hover {
+    background-color: #ddd;
+  }
+</style>
+
+  </head>
+  <body>
+    <!-- <p id="documentation_note"><a href="https://digitransit.fi/en/developers/apis/4-realtime-api/vehicle-positions/">HFP API documentation</a></p> -->
+	<!-- <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+	   <a href="" class="navbar-brand"><img src="logo.png" height="20%" width="20%"> <span style="vertical-align:sub;">Sandbox</span></a>
+	   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+		 <span class="navbar-toggler-icon"></span>
+	   </button>
+
+	   <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+		 <ul class="navbar-nav mr-auto">
+		   <li class="nav-item active">
+			 <a class="nav-link" href="">Home <span class="sr-only">(current)</span></a>
+		   </li>
+		 </ul>
+	   </div>
+	</nav> -->
+	<!-- <div id="sidebar"></div> -->
+	<div id="tableContainer" style="position: absolute; top: 0; right: 0; z-index: 1000; height: 100%; overflow: auto; background: white;">
+  <table id="vehicleTable" border="1">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0, 'text')">ID</th>
+		<th onclick="sortTable(1, 'text')">Vehicle</th>
+		<th onclick="sortTable(2, 'number')">Speed</th>
+		<th onclick="sortTable(3, 'number')">Start Time</th>
+		<th onclick="sortTable(4, 'text')">Direction</th>
+		<th onclick="sortTable(5, 'text')">Line</th>
+      </tr>
+    </thead>
+    <tbody id="vehicleTableBody">
+    </tbody>
+  </table>
+</div>
+
+	<div id="map"></div>
+	<div class="container" id="map_container" style="display:none;">
+		  <div  style="display: none;"><button class="geofilter" id="geohash_on">Use map bounds for geohash filter</button><button class="geofilter" id="geohash_off">Remove geohash filter</button></div>
+		  <br/>
+		  <div id="storeinfo"></div>
+	</div>
+	
+	<div class="container" id="traffic-select" style="position:absolute;bottom:20px;display:none;">
+		<table>
+		  <tr class="topic_value" style="display: none;">
+			<td>Temporal type: </td>
+			<td><select class="form-control form-control-sm value" id="temporal_type">
+				  <option>+</option>
+				  <option>ongoing</option>
+				  <option>upcoming</option>
+				</select>
+			</td>
+		  </tr>
+			  
+		  <tr class="topic_value">
+			<td>Väline: </td>
+			<td><select class="form-control form-control-sm value" id="transport_mode">
+				<option>+</option>
+				<option>bus</option>
+				<option selected>tram</option>
+				<option>train</option>
+			  </select>
+			</td>
+		  </tr>
+
+		  <tr class="topic_value"  style="display: none;">
+			<td>Operator id: </td>
+			<td><input class="form-control form-control-sm value" id="operator_id" type="text" value="+"></input></td>
+			<td class="validation_note">Operator id should be 4 digits long<td>
+		  </tr>
+
+		  <tr class="topic_value"  style="display: none;">
+			<td>Vehicle number: </td>
+			<td><input class="form-control form-control-sm value" id="vehicle_number" type="text" value="+"></input></td>
+			<td class="validation_note">Vehicle number should be 5 digits long<td>
+		  </tr>
+
+		  <tr class="topic_value">
+			<td>Reitti ID: </td>
+			<td><input class="form-control form-control-sm value" id="route_id" type="text" value="+"></input></td>
+			<td class="validation_note">Route id should contain 4 digits and up to 2 characters<td>
+		  </tr>
+
+		  <tr class="topic_value">
+			<td>Suunta: </td>
+			<td><select class="form-control form-control-sm value" id="direction_id">
+				  <option>+</option>
+				  <option>1</option>
+				  <option>2</option>
+				</select>
+			</td>
+		  </tr>
+
+		  <tr class="topic_value"  style="display: none;">
+			<td>Headsign: </td>
+			<td><input class="form-control form-control-sm value" id="headsign" type="text" value="+"></input></td>
+		  </tr>
+
+		  <tr class="topic_value" style="display: none;">
+			<td>Start time: </td>
+			<td><input class="form-control form-control-sm value" id="start_time" type="text" value="+"></input></td>
+			<td class="validation_note">Time should be in format <code>hh:MM</code><td>
+		  </tr>
+
+		  <tr class="topic_value">
+			<td>Seuraava pysäkki: </td>
+			<td><input class="form-control form-control-sm value" id="next_stop" type="text" value="+"></input></td>
+			<td class="validation_note">Stop id should be 7 digits long<td>
+		  </tr>
+
+		  <tr class="topic_value" style="display: none;">
+			<td>Geohash level: </td>
+			<td><select class="form-control form-control-sm value" id="geohash_level">
+				  <option>0</option>
+				  <option>1</option>
+				  <option>2</option>
+				  <option>3</option>
+				  <option>4</option>
+				  <option selected>5</option>
+				  <option>+</option>
+				</select></td>
+			  <td id="geohash_note"></td>
+		  </tr>
+		</table>
+	</div> 
+
+	<a  style="display: none;" id="show_topics" href="javascript:;" onclick="showTopics()">Show topics</a>
+	<pre id="topics" style="display:none"></pre>
+
+		
+    <script src="index.js"></script>
+  </body>
+</html>
